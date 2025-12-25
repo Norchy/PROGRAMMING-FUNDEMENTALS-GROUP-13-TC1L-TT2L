@@ -1,72 +1,87 @@
 #include <iostream>
-#include <vector>
+
+
+#include <iostream>
 #include <string>
 using namespace std;
 
-// Function to insert a new attendance row into the attendance sheet
-// attendanceSheet stores all rows (StudentID, Name, Status)
-void insertAttendanceRow(vector<vector<string>> &attendanceSheet)
-{
-    // Variables to store user input
-    string studentID, name, status;
+const int MAX_COLUMNS = 10;
 
-    // Display section header
-    cout << "----------------------------------\n";
-    cout << "Insert New Attendance Row\n";
-    cout << "----------------------------------\n";
+struct Column {
+    string name;
+    string type; // INT or TEXT
+};
 
-    // ===== StudentID Input =====
-    cout << "Enter StudentID: ";
-    cin >> studentID;
+void createSheet(string &sheetName) {
+    cout << "Enter attendance sheet name: ";
+    getline(cin, sheetName);
 
-    // Validate StudentID (must be an integer)
-    for (char c : studentID)
-    {
-        // If any character is not a digit, input is invalid
-        if (!isdigit(c))
-        {
-            cout << "Error: Invalid INT value. Please enter a number.\n";
-            return; // Stop function if invalid input
+    if (sheetName.empty()) {
+        cout << "Error: Sheet name cannot be empty.\n";
+        createSheet(sheetName);
+    } else {
+        cout << "Attendance sheet \"" << sheetName << "\" created successfully.\n";
+    }
+}
+
+bool isValidType(string type) {
+    return (type == "INT" || type == "TEXT");
+}
+
+int createColumns(Column columns[]) {
+    int numCols;
+    cout << "Enter number of columns (max 10): ";
+    cin >> numCols;
+
+    if (numCols <= 0 || numCols > MAX_COLUMNS) {
+        cout << "Error: Invalid number of columns.\n";
+        return 0;
+    }
+
+    cin.ignore(); // clear buffer
+
+    for (int i = 0; i < numCols; i++) {
+        cout << "\nColumn " << i + 1 << " name: ";
+        getline(cin, columns[i].name);
+
+        cout << "Column " << i + 1 << " type (INT/TEXT): ";
+        getline(cin, columns[i].type);
+
+        if (!isValidType(columns[i].type)) {
+            cout << "Error: Invalid data type. Use INT or TEXT only.\n";
+            i--; // redo this column
         }
     }
 
-    // Clear input buffer before using getline
-    cin.ignore();
+    return numCols;
+}
 
-    // ===== Name Input =====
-    cout << "Enter Name: ";
-    getline(cin, name);
+void displayCSVHeader(Column columns[], int numCols) {
+    cout << "\nCSV View (Header Only):\n";
+    for (int i = 0; i < numCols; i++) {
+        cout << columns[i].name;
+        if (i != numCols - 1) cout << ",";
+    }
+    cout << endl;
+}
 
-    // Validate Name (cannot be empty)
-    if (name.empty())
-    {
-        cout << "Error: Name cannot be empty.\n";
-        return; // Stop function if name is empty
+int main() {
+    string sheetName;
+    Column columns[MAX_COLUMNS];
+    int columnCount;
+
+    cout << "=============================================\n";
+    cout << "STUDENT ATTENDANCE TRACKER - MILESTONE 1\n";
+    cout << "=============================================\n\n";
+
+    createSheet(sheetName);
+    columnCount = createColumns(columns);
+
+    if (columnCount > 0) {
+        displayCSVHeader(columns, columnCount);
+    } else {
+        cout << "Failed to create sheet structure.\n";
     }
 
-    // ===== Status Input =====
-    cout << "Enter Status (Present: 1, Absent: 0): ";
-    cin >> status;
-
-    // Validate Status (must be 0 or 1)
-    if (status != "0" && status != "1")
-    {
-        cout << "Error: Status must be 0 or 1.\n";
-        return; // Stop function if invalid status
-    }
-
-    // ===== Insert Row =====
-    // Create a new row for attendance data
-    vector<string> newRow;
-
-    // Add StudentID, Name, and Status to the row
-    newRow.push_back(studentID);
-    newRow.push_back(name);
-    newRow.push_back(status);
-
-    // Add the new row into the attendance sheet
-    attendanceSheet.push_back(newRow);
-
-    // Display success message
-    cout << "Row inserted successfully.\n";
+    return 0;
 }
