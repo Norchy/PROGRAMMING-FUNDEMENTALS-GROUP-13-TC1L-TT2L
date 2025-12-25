@@ -67,4 +67,6 @@ void insertAttendanceRow(vector<vector<string>> &attendanceSheet)
     // Add the new row into the attendance sheet
     attendanceSheet.push_back(newRow);
 
-    // Display success m
+    // Display success message
+    cout << "Row inserted successfully.\n";
+}
