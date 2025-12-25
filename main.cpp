@@ -18,20 +18,20 @@ void displayCSV(Attendance sheet[], int rowCount)
             cout << "-------------------------" << endl;
             cout << "Attendance sheet is empty" << endl;
             cout << "-------------------------" << endl;
+            return;
         }
-        return;
 
 
 
     cout << endl;
-    cout << "---------------------" << endl;
-    cout << "StudentID,Name,Status" << endl;
-    cout << "---------------------" << endl;
+    cout << "--------------------------------" << endl;
+    cout << "VIew Attendance Sheet (CSV Mode)" << endl;
+    cout << "--------------------------------" << endl;
 
     for (int i = 0; i < rowCount; i++)
         {
-            cout << sheet[i].studentID << ","
-                 << sheet[i].name << ","
+            cout << sheet[i].studentID << ", "
+                 << sheet[i].name << ", "
                  << sheet[i].status << endl;
         }
 }
