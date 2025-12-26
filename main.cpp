@@ -37,8 +37,3 @@ void displayCSV(Attendance sheet[], int rowCount)
         }
 }
 
-int main()
-{
-    cout << "Hello world!" << endl;
-    return 0;
-}
