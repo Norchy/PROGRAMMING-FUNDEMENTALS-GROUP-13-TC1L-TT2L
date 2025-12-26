@@ -1,6 +1,7 @@
 #include <iostream>
 
 using namespace std;
+
 struct Attendance
 {
     int studentID;
