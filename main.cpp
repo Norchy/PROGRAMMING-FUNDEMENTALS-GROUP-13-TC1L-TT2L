@@ -156,7 +156,7 @@ void createSheet(string &sheetName)
 */
 int createColumnsExact(Column columns[])
 {
-    int numCols;
+    string numCols;
 
     // Force user to enter 3 (to match sample output)
     while (true)
@@ -164,7 +164,7 @@ int createColumnsExact(Column columns[])
         cout << "Define number of columns (max 3): ";
         cin >> numCols;
 
-        if (numCols == 3)
+        if (numCols == "3")
             break;
 
         cout << "Error: For Milestone 1, you must define exactly 3 columns.\n";
