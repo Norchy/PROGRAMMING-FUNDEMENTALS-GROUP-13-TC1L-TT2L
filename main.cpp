@@ -3,6 +3,7 @@
 #include <cctype>   // for isdigit()
 #include <thread> // for time delay
 #include <chrono> // for time delay
+#include <limits>
 
 // *********************************************************
 // Program: YOUR_FILENAME.cpp
@@ -27,6 +28,7 @@ using namespace std;
 
 const int MAX_COLUMNS = 10;
 const int MAX_ROWS = 100;
+const int MAX_INPUT_ROWS = 10; // NEW: max rows user can input per sheet
 
 // Member 1 structure
 struct Column
@@ -43,14 +45,73 @@ struct Attendance
     int status; // 1 = Present, 0 = Absent
 };
 
+struct AttendanceRow
+{
+    string values[MAX_COLUMNS];
+};
+
 // Member 4 - Introduction
 void createSheet(string &sheetName);
 int createColumnsExact(Column columns[]);
-void insertAttendanceRow(Attendance sheet[], int &rowCount);
-void displayCSV(Attendance sheet[], int rowCount);
+int getRowCountFromUser(); // NEW
+void insertAttendanceRow(AttendanceRow sheet[], int &rowCount, Column columns[], int colCount);
+void displayCSV(AttendanceRow sheet[], int rowCount, Column columns[], int colCount);
 
+static string toLowerStr(string s)
+{
+    for (char &c : s)
+        c = tolower(static_cast<unsigned char>(c));
+    return s;
+}
 
-void introduction(string &sheetName, Column columns[], Attendance attendanceSheet[], int &rowCount)
+static bool isValidIntString(const string &s)
+{
+    if (s.empty()) return false;
+    for (char c : s)
+    {
+        if (!isdigit(static_cast<unsigned char>(c)))
+            return false;
+    }
+    return true;
+}
+
+static string trim(const string &s)
+{
+    size_t start = s.find_first_not_of(" \t\r\n");
+    if (start == string::npos) return "";
+    size_t end = s.find_last_not_of(" \t\r\n");
+    return s.substr(start, end - start + 1);
+}
+
+static bool parseColumnDefinition(const string &input, string &colName, string &colType)
+{
+    string s = trim(input);
+
+    size_t openPos = s.find_last_of('(');
+    size_t closePos = s.find_last_of(')');
+
+    if (openPos == string::npos || closePos == string::npos || closePos < openPos)
+        return false;
+
+    string namePart = trim(s.substr(0, openPos));
+    string typePart = trim(s.substr(openPos + 1, closePos - openPos - 1));
+
+    if (namePart.empty() || typePart.empty())
+        return false;
+
+    string typeLower = toLowerStr(typePart);
+    if (typeLower == "int")
+        colType = "INT";
+    else if (typeLower == "text")
+        colType = "TEXT";
+    else
+        return false;
+
+    colName = namePart;
+    return true;
+}
+
+void introduction(string &sheetName, Column columns[], AttendanceRow attendanceSheet[], int &rowCount)
 {
     string option;
 
@@ -68,14 +129,20 @@ void introduction(string &sheetName, Column columns[], Attendance attendanceShee
 
         // Member 1
         createSheet(sheetName);
-        createColumnsExact(columns);
+        int colCount = createColumnsExact(columns);
 
-        // Member 2 (2 insertions like sample)
-        insertAttendanceRow(attendanceSheet, rowCount);
-        insertAttendanceRow(attendanceSheet, rowCount);
+        // NEW: user define how many rows to insert (max 10)
+        int totalRows = getRowCountFromUser();
+        cin.ignore(); // consume newline after cin >>
+
+        // Member 2 (insert based on user input rows)
+        for (int i = 0; i < totalRows; i++)
+        {
+            insertAttendanceRow(attendanceSheet, rowCount, columns, colCount);
+        }
 
         // Member 3
-        displayCSV(attendanceSheet, rowCount);
+        displayCSV(attendanceSheet, rowCount, columns, colCount);
 
         this_thread::sleep_for(chrono::seconds(2));
 
@@ -157,44 +224,92 @@ void createSheet(string &sheetName)
 int createColumnsExact(Column columns[])
 {
     string numCols;
+    int colCount = 0;
 
-    // Force user to enter 3 (to match sample output)
     while (true)
     {
-        cout << "Define number of columns (max 3): ";
+        cout << "Define number of columns (max 10): ";
         cin >> numCols;
 
-        if (numCols == "3")
-            break;
+        if (!isValidIntString(numCols))
+        {
+            cout << "Error: Please enter a valid number.\n";
+            continue;
+        }
 
-        cout << "Error: For Milestone 1, you must define exactly 3 columns.\n";
+        colCount = stoi(numCols);
+
+        if (colCount < 1 || colCount > MAX_COLUMNS)
+        {
+            cout << "Error: Number of columns must be between 1 and 10.\n";
+            continue;
+        }
+
+        break;
     }
 
-    cin.ignore(); // clear newline before getline
+    cin.ignore();
 
-    // Column 1
-    cout << "Enter column 1 name: ";
-    getline(cin, columns[0].name);
-    columns[0].type = "INT";
+    for (int i = 0; i < colCount; i++)
+    {
+        while (true)
+        {
+            cout << "Enter column " << (i + 1) << " name: ";
+            string input;
+            getline(cin, input);
 
-    // Column 2
-    cout << "Enter column 2 name: ";
-    getline(cin, columns[1].name);
-    columns[1].type = "TEXT";
+            string nameParsed, typeParsed;
+            if (!parseColumnDefinition(input, nameParsed, typeParsed))
+            {
+                cout << "Error: Please use format like \"ColumnName (INT)\" or \"ColumnName (TEXT)\".\n";
+                continue;
+            }
 
-    // Column 3
-    cout << "Enter column 3 name: ";
-    getline(cin, columns[2].name);
-    columns[2].type = "TEXT";
+            columns[i].name = nameParsed;
+            columns[i].type = typeParsed;
+            break;
+        }
+    }
 
     cout << "\nSheet structure created successfully.\n";
-    return 3;
+    return colCount;
+}
+
+// NEW: let user choose how many rows to insert (max 10)
+int getRowCountFromUser()
+{
+    string input;
+    int rows = 0;
+
+    while (true)
+    {
+        cout << "Define number of rows to insert (max 10): ";
+        cin >> input;
+
+        if (!isValidIntString(input))
+        {
+            cout << "Error: Please enter a valid number.\n";
+            continue;
+        }
+
+        rows = stoi(input);
+
+        if (rows < 1 || rows > MAX_INPUT_ROWS)
+        {
+            cout << "Error: Number of rows must be between 1 and 10.\n";
+            continue;
+        }
+
+        break;
+    }
+
+    return rows;
 }
 
 // ===============================
 // Member 2: Insert attendance row
 // ===============================
-void insertAttendanceRow(Attendance sheet[], int &rowCount)
+void insertAttendanceRow(AttendanceRow sheet[], int &rowCount, Column columns[], int colCount)
 {
     if (rowCount >= MAX_ROWS)
     {
@@ -206,57 +321,96 @@ void insertAttendanceRow(Attendance sheet[], int &rowCount)
     cout << "Insert New Attendance Row\n";
     cout << "----------------------------------\n";
 
-    // --- StudentID (validate INT) ---
-    string studentIDInput;
-    cout << "Enter StudentID: ";
-    cin >> studentIDInput;
-
-    for (char c : studentIDInput)
+    for (int i = 0; i < colCount; i++)
     {
-        if (!isdigit(static_cast<unsigned char>(c)))
+        string colNameLower = toLowerStr(columns[i].name);
+
+        if (colNameLower == "studentid")
         {
-            cout << "Error: Invalid INT value. Please enter a number.\n";
-            return;
+            while (true)
+            {
+                cout << "Enter StudentID: " << flush;
+                string v;
+                getline(cin, v);
+                v = trim(v);
+
+                if (!isValidIntString(v))
+                {
+                    cout << "Error: Invalid INT value. Please enter a number.\n";
+                    continue;
+                }
+
+                sheet[rowCount].values[i] = v;
+                break;
+            }
+        }
+        else if (colNameLower == "status")
+        {
+            while (true)
+            {
+                cout << "Enter Status (Present: 1, Absent: 0): " << flush;
+                string v;
+                getline(cin, v);
+                v = trim(v);
+
+                if (v != "0" && v != "1")
+                {
+                    cout << "Error: Status must be 0 or 1.\n";
+                    continue;
+                }
+
+                sheet[rowCount].values[i] = v;
+                break;
+            }
+        }
+        else
+        {
+            if (columns[i].type == "INT")
+            {
+                while (true)
+                {
+                    cout << "Enter " << columns[i].name << ": " << flush;
+                    string v;
+                    getline(cin, v);
+                    v = trim(v);
+
+                    if (!isValidIntString(v))
+                    {
+                        cout << "Error: Invalid INT value. Please enter a number.\n";
+                        continue;
+                    }
+
+                    sheet[rowCount].values[i] = v;
+                    break;
+                }
+            }
+            else
+            {
+                while (true)
+                {
+                    cout << "Enter " << columns[i].name << ": " << flush;
+                    string v;
+                    getline(cin, v);
+                    v = trim(v);
+
+                    if (v.empty())
+                    {
+                        cout << "Error: TEXT value cannot be empty.\n";
+                        continue;
+                    }
+
+                    sheet[rowCount].values[i] = v;
+                    break;
+                }
+            }
         }
     }
 
-    int studentID = stoi(studentIDInput);
-    cin.ignore(); // for getline after cin >>
-
-    // --- Name (TEXT) ---
-    string name;
-    cout << "Enter Name: ";
-    getline(cin, name);
-
-    if (name.empty())
-    {
-        cout << "Error: Name cannot be empty.\n";
-        return;
-    }
-
-    // --- Status (0/1) ---
-    string statusInput;
-    cout << "Enter Status (Present: 1, Absent: 0): ";
-    cin >> statusInput;
-
-    if (statusInput != "0" && statusInput != "1")
-    {
-        cout << "Error: Status must be 0 or 1.\n";
-        return;
-    }
-
-    int status = stoi(statusInput);
-
-    // Insert row
-    sheet[rowCount].studentID = studentID;
-    sheet[rowCount].name = name;
-    sheet[rowCount].status = status;
     rowCount++;
-
     cout << "Row inserted successfully.\n";
 }
 
-void displayCSV(Attendance sheet[], int rowCount)
+void displayCSV(AttendanceRow sheet[], int rowCount, Column columns[], int colCount)
 {
     if (rowCount == 0)
         {
@@ -268,16 +422,28 @@ void displayCSV(Attendance sheet[], int rowCount)
 
 
 
-    cout << endl;
     cout << "--------------------------------" << endl;
     cout << "VIew Attendance Sheet (CSV Mode)" << endl;
     cout << "--------------------------------" << endl;
 
+    // Header row: ikut column name yang user define
+    for (int j = 0; j < colCount; j++)
+    {
+        cout << columns[j].name;
+        if (j != colCount - 1)
+            cout << ", ";
+    }
+    cout << endl;
+
     for (int i = 0; i < rowCount; i++)
         {
-            cout << sheet[i].studentID << ", "
-                 << sheet[i].name << ", "
-                 << sheet[i].status << endl;
+            for (int j = 0; j < colCount; j++)
+            {
+                cout << sheet[i].values[j];
+                if (j != colCount - 1)
+                    cout << ", ";
+            }
+            cout << endl;
         }
 }
 
@@ -288,7 +454,7 @@ int main()
 {
     string sheetName;
     Column columns[MAX_COLUMNS];
-    Attendance attendanceSheet[MAX_ROWS];
+    AttendanceRow attendanceSheet[MAX_ROWS];
     int rowCount = 0;
 
     cout << "=============================================\n";
