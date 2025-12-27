@@ -28,6 +28,7 @@ using namespace std;
 
 const int MAX_COLUMNS = 10;
 const int MAX_ROWS = 100;
+const int MAX_INPUT_ROWS = 10; // NEW: max rows user can input per sheet
 
 // Member 1 structure
 struct Column
@@ -52,6 +53,7 @@ struct AttendanceRow
 // Member 4 - Introduction
 void createSheet(string &sheetName);
 int createColumnsExact(Column columns[]);
+int getRowCountFromUser(); // NEW
 void insertAttendanceRow(AttendanceRow sheet[], int &rowCount, Column columns[], int colCount);
 void displayCSV(AttendanceRow sheet[], int rowCount, Column columns[], int colCount);
 
@@ -129,9 +131,15 @@ void introduction(string &sheetName, Column columns[], AttendanceRow attendanceS
         createSheet(sheetName);
         int colCount = createColumnsExact(columns);
 
-        // Member 2 (2 insertions like sample)
-        insertAttendanceRow(attendanceSheet, rowCount, columns, colCount);
-        insertAttendanceRow(attendanceSheet, rowCount, columns, colCount);
+        // NEW: user define how many rows to insert (max 10)
+        int totalRows = getRowCountFromUser();
+        cin.ignore(); // consume newline after cin >>
+
+        // Member 2 (insert based on user input rows)
+        for (int i = 0; i < totalRows; i++)
+        {
+            insertAttendanceRow(attendanceSheet, rowCount, columns, colCount);
+        }
 
         // Member 3
         displayCSV(attendanceSheet, rowCount, columns, colCount);
@@ -265,6 +273,37 @@ int createColumnsExact(Column columns[])
 
     cout << "\nSheet structure created successfully.\n";
     return colCount;
+}
+
+// NEW: let user choose how many rows to insert (max 10)
+int getRowCountFromUser()
+{
+    string input;
+    int rows = 0;
+
+    while (true)
+    {
+        cout << "Define number of rows to insert (max 10): ";
+        cin >> input;
+
+        if (!isValidIntString(input))
+        {
+            cout << "Error: Please enter a valid number.\n";
+            continue;
+        }
+
+        rows = stoi(input);
+
+        if (rows < 1 || rows > MAX_INPUT_ROWS)
+        {
+            cout << "Error: Number of rows must be between 1 and 10.\n";
+            continue;
+        }
+
+        break;
+    }
+
+    return rows;
 }
 
 // ===============================
