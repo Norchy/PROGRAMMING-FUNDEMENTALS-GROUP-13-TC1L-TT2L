@@ -12,7 +12,7 @@
 // Trimester: 2530
 // Member_1: ID | NAME | EMAIL | PHONE
 // Member_2: ID | NAME | EMAIL | PHONE
-// Member_3: ID | NAME | EMAIL | PHONE
+// Member_3: 252UC241Q3 | EMIL SHADIQ BIN ISKANDAR | EMAIL | 011-1125-4415
 // Member_4: 252UC241MF | LUQMAN HAKIM BIN MUHAMMAD FAMHI | EMAIL | 013-366-8674
 // *********************************************************
 // Task Distribution
