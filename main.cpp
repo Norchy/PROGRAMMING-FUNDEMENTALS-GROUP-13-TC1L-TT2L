@@ -4,17 +4,18 @@
 #include <thread> // for time delay
 #include <chrono> // for time delay
 #include <limits>
+#include <iomanip> // csv mode alignments
 
 // *********************************************************
-// Program: YOUR_FILENAME.cpp
+// Program: main.cpp
 // Course: CCP6114 Programming Fundamentals
 // Lecture Class: TC1L
 // Tutorial Class: TT2L
 // Trimester: 2530
-// Member_1: ID | NAME | EMAIL | PHONE
-// Member_2: ID | NAME | EMAIL | PHONE
-// Member_3: 252UC241Q3 | EMIL SHADIQ BIN ISKANDAR | EMAIL | 011-1125-4415
-// Member_4: 252UC241MF | LUQMAN HAKIM BIN MUHAMMAD FAMHI | EMAIL | 013-366-8674
+// Member_1: 252UC2425R | Arfa Mirza Bin Shamsul Safuan | arfa.mirza.shamsul1@student.edu.my | 013-268 9303
+// Member_2: 252UC241Q3 | EMIL SHADIQ BIN ISKANDAR | emil.shadiq.iskandar1@mmu.student.edu.my | 011-1125-4415
+// Member_3: 252UC24246 | Dairell Hannan bin Ahmad Nizam | dairell.hannan.ahmad1@student.mmu.edu.my | 019-880 6564
+// Member_4: 252UC241MF | LUQMAN HAKIM BIN MUHAMMAD FAMHI | LUQMAN.HAKIM.MUHAMMAD1@student.mmu.edu.my | 013-366-8674
 // *********************************************************
 // Task Distribution
 // Member_1: Sheet Creation and Data Structure
@@ -201,6 +202,7 @@ void introduction(string &sheetName, Column columns[], AttendanceRow attendanceS
 // ===============================
 void createSheet(string &sheetName)
 {
+    cout << "=============================================\n";
     cout << "Enter attendance sheet name: ";
     getline(cin, sheetName);
 
@@ -254,7 +256,7 @@ int createColumnsExact(Column columns[])
     {
         while (true)
         {
-            cout << "Enter column " << (i + 1) << " name: ";
+            cout << "\nEnter column " << (i + 1) << " name (Ensure to put (INT) or (TEXT) at the end of the name for column types): ";
             string input;
             getline(cin, input);
 
@@ -283,6 +285,7 @@ int getRowCountFromUser()
 
     while (true)
     {
+        cout << "=============================================\n";
         cout << "Define number of rows to insert (max 10): ";
         cin >> input;
 
@@ -421,30 +424,50 @@ void displayCSV(AttendanceRow sheet[], int rowCount, Column columns[], int colCo
         }
 
 
-
+    cout << "=============================================\n\n";
     cout << "--------------------------------" << endl;
     cout << "VIew Attendance Sheet (CSV Mode)" << endl;
     cout << "--------------------------------" << endl;
 
-    // Header row: ikut column name yang user define
+    int width[MAX_COLUMNS];
+
+    //Automatic determine width for each coloumn based on user input
+    for (int j = 0; j < colCount; j++)
+        width[j] = columns[j].name.length();
+
+    for (int i = 0; i < rowCount; i++)
+    {
+        for (int j = 0; j < colCount; j++)
+        {
+            int len = sheet[i].values[j].length();
+            if (len > width[j])
+                width[j] = len;
+        }
+    }
+
+    // Padding so user input tak dekat dengan comma and centred
+    for (int j = 0; j < colCount; j++)
+        width[j] += 1;
+
+    // header print
     for (int j = 0; j < colCount; j++)
     {
-        cout << columns[j].name;
-        if (j != colCount - 1)
-            cout << ", ";
+        cout << left << setw(width[j]) << columns[j].name;
+        if (j != colCount - 1) cout << ", ";
     }
     cout << endl;
 
+    // row printing
     for (int i = 0; i < rowCount; i++)
+    {
+        for (int j = 0; j < colCount; j++)
         {
-            for (int j = 0; j < colCount; j++)
-            {
-                cout << sheet[i].values[j];
-                if (j != colCount - 1)
-                    cout << ", ";
-            }
-            cout << endl;
+            cout << left << setw(width[j]) << sheet[i].values[j];
+            if (j != colCount - 1) cout << ", ";
         }
+        cout << endl;
+    }
+
 }
 
 // ===============================
