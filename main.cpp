@@ -414,62 +414,7 @@ void insertAttendanceRow(AttendanceRow sheet[], int &rowCount, Column columns[],
     cout << "Row inserted successfully.\n";
 }
 
-void displayCSV(AttendanceRow sheet[], int rowCount, Column columns[], int colCount)
-{
-    if (rowCount == 0)
-        {
-            cout << "-------------------------" << endl;
-            cout << "Attendance sheet is empty" << endl;
-            cout << "-------------------------" << endl;
-            return;
-        }
 
-
-    cout << "=============================================\n\n";
-    cout << "--------------------------------" << endl;
-    cout << "VIew Attendance Sheet (CSV Mode)" << endl;
-    cout << "--------------------------------" << endl;
-
-    int width[MAX_COLUMNS];
-
-    //Automatic determine width for each coloumn based on user input
-    for (int j = 0; j < colCount; j++)
-        width[j] = columns[j].name.length();
-
-    for (int i = 0; i < rowCount; i++)
-    {
-        for (int j = 0; j < colCount; j++)
-        {
-            int len = sheet[i].values[j].length();
-            if (len > width[j])
-                width[j] = len;
-        }
-    }
-
-    // Padding so user input tak dekat dengan comma and centred
-    for (int j = 0; j < colCount; j++)
-        width[j] += 1;
-
-    // header print
-    for (int j = 0; j < colCount; j++)
-    {
-        cout << left << setw(width[j]) << columns[j].name;
-        if (j != colCount - 1) cout << ", ";
-    }
-    cout << endl;
-
-    // row printing
-    for (int i = 0; i < rowCount; i++)
-    {
-        for (int j = 0; j < colCount; j++)
-        {
-            cout << left << setw(width[j]) << sheet[i].values[j];
-            if (j != colCount - 1) cout << ", ";
-        }
-        cout << endl;
-    }
-
-}
 
 // ===============================
 // Main (Merged)
