@@ -31,12 +31,6 @@ const int MAX_COLUMNS = 10;
 const int MAX_ROWS = 100;
 const int MAX_INPUT_ROWS = 10; // NEW: max rows user can input per sheet
 
-// Member 1 structure
-struct Column
-{
-    string name;
-    string type; // INT or TEXT
-};
 
 // Member 2 structure
 struct Attendance
