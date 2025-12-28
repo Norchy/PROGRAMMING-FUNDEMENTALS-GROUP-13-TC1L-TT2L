@@ -218,7 +218,97 @@ void createSheet(string &sheetName)
     }
 }
 
+/*
+    Member 1 (Exact sample behaviour):
+    - Only accepts 3 columns
+    - Prompts for the exact 3 column "names" shown in sample output
+    - Automatically sets type according to the fixed format
+*/
+int createColumnsExact(Column columns[])
+{
+    string numCols;
+    int colCount = 0;
 
+    while (true)
+    {
+        cout << "Define number of columns (max 10): ";
+        cin >> numCols;
+
+        if (!isValidIntString(numCols))
+        {
+            cout << "Error: Please enter a valid number.\n";
+            continue;
+        }
+
+        colCount = stoi(numCols);
+
+        if (colCount < 1 || colCount > MAX_COLUMNS)
+        {
+            cout << "Error: Number of columns must be between 1 and 10.\n";
+            continue;
+        }
+
+        break;
+    }
+
+    cin.ignore();
+
+    for (int i = 0; i < colCount; i++)
+    {
+        while (true)
+        {
+            cout << "\nEnter column " << (i + 1) << " name (Ensure to put (INT) or (TEXT) at the end of the name for column types): ";
+            string input;
+            getline(cin, input);
+
+            string nameParsed, typeParsed;
+            if (!parseColumnDefinition(input, nameParsed, typeParsed))
+            {
+                cout << "Error: Please use format like \"ColumnName (INT)\" or \"ColumnName (TEXT)\".\n";
+                continue;
+            }
+
+            columns[i].name = nameParsed;
+            columns[i].type = typeParsed;
+            break;
+        }
+    }
+
+    cout << "\nSheet structure created successfully.\n";
+    return colCount;
+}
+
+// NEW: let user choose how many rows to insert (max 10)
+int getRowCountFromUser()
+{
+    string input;
+    int rows = 0;
+
+    while (true)
+    {
+        cout << "=============================================\n";
+        cout << "Define number of rows to insert (max 10): ";
+        cin >> input;
+
+        if (!isValidIntString(input))
+        {
+            cout << "Error: Please enter a valid number.\n";
+            continue;
+        }
+
+        rows = stoi(input);
+
+        if (rows < 1 || rows > MAX_INPUT_ROWS)
+        {
+            cout << "Error: Number of rows must be between 1 and 10.\n";
+            continue;
+        }
+
+        break;
+    }
+
+    return rows;
+}
 
 // ===============================
 // Member 2: Insert attendance row
