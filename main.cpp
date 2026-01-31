@@ -1,87 +1,143 @@
 #include <iostream>
-
-
-#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
+
 using namespace std;
 
-const int MAX_COLUMNS = 10;
-
-struct Column {
+/*
+    Structure to store attendance record
+*/
+struct Student {
+    int id;
     string name;
-    string type; // INT or TEXT
+    int status;
 };
 
-void createSheet(string &sheetName) {
-    cout << "Enter attendance sheet name: ";
-    getline(cin, sheetName);
+Student attendance[100];
+int recordCount = 0;
+string termName;
 
-    if (sheetName.empty()) {
-        cout << "Error: Sheet name cannot be empty.\n";
-        createSheet(sheetName);
-    } else {
-        cout << "Attendance sheet \"" << sheetName << "\" created successfully.\n";
+/*
+    Function prototypes
+*/
+bool openAttendanceFile(fstream &file, string filename);
+void loadAttendance(fstream &file);
+void displayAttendance();
+void saveAttendance(string filename);
+
+/*
+    Create school term (Database)
+*/
+void createSchoolTerm() {
+    cout << "Create School Term (Database)\n";
+    cout << "---------------------------------\n";
+    cout << "Enter term name: ";
+    cin >> termName;
+    cout << "Database \"" << termName << "\" created and loaded.\n\n";
+}
+
+int main() {
+    fstream dataFile;
+    string filename;
+
+    cout << "============================================\n";
+    cout << " STUDENT ATTENDANCE TRACKER - MILESTONE 2\n";
+    cout << "============================================\n\n";
+
+    createSchoolTerm();
+
+    cout << "Reading attendance data from file...\n";
+    cout << "Enter attendance filename: ";
+    cin >> filename;
+
+    if (openAttendanceFile(dataFile, filename)) {
+        cout << "File opened successfully.\n\n";
+
+        loadAttendance(dataFile);
+        dataFile.close();
+
+        displayAttendance();
+        saveAttendance(filename);
+
+        cout << "Attendance data saved back to file.\n";
+    }
+    else {
+        cout << "File open error.\n";
+    }
+
+    return 0;
+}
+
+/*
+    Opens attendance file.
+    Accepts fstream object by reference.
+    Returns true if file opens successfully.
+*/
+bool openAttendanceFile(fstream &file, string filename) {
+    file.open(filename, ios::in);
+    if (file.fail())
+        return false;
+    else
+        return true;
+}
+
+/*
+    Loads attendance data from file into memory
+*/
+void loadAttendance(fstream &file) {
+    string line;
+    recordCount = 0;
+
+    // Skip header
+    getline(file, line);
+
+    while (getline(file, line) && recordCount < 100) {
+        stringstream ss(line);
+        string temp;
+
+        getline(ss, temp, ',');
+        attendance[recordCount].id = stoi(temp);
+
+        getline(ss, attendance[recordCount].name, ',');
+
+        getline(ss, temp, ',');
+        attendance[recordCount].status = stoi(temp);
+
+        recordCount++;
     }
 }
 
-bool isValidType(string type) {
-    return (type == "INT" || type == "TEXT");
-}
+/*
+    Displays initial attendance sheet
+*/
+void displayAttendance() {
+    cout << "---------------------------------\n";
+    cout << "Current Attendance Sheet\n";
+    cout << "---------------------------------\n";
+    cout << "StudentID, Name, Status\n";
 
-int createColumns(Column columns[]) {
-    int numCols;
-    cout << "Enter number of columns (max 10): ";
-    cin >> numCols;
-
-    if (numCols <= 0 || numCols > MAX_COLUMNS) {
-        cout << "Error: Invalid number of columns.\n";
-        return 0;
-    }
-
-    cin.ignore(); // clear buffer
-
-    for (int i = 0; i < numCols; i++) {
-        cout << "\nColumn " << i + 1 << " name: ";
-        getline(cin, columns[i].name);
-
-        cout << "Column " << i + 1 << " type (INT/TEXT): ";
-        getline(cin, columns[i].type);
-
-        if (!isValidType(columns[i].type)) {
-            cout << "Error: Invalid data type. Use INT or TEXT only.\n";
-            i--; // redo this column
-        }
-    }
-
-    return numCols;
-}
-
-void displayCSVHeader(Column columns[], int numCols) {
-    cout << "\nCSV View (Header Only):\n";
-    for (int i = 0; i < numCols; i++) {
-        cout << columns[i].name;
-        if (i != numCols - 1) cout << ",";
+    for (int i = 0; i < recordCount; i++) {
+        cout << attendance[i].id << ", "
+             << attendance[i].name << ", "
+             << attendance[i].status << endl;
     }
     cout << endl;
 }
 
-int main() {
-    string sheetName;
-    Column columns[MAX_COLUMNS];
-    int columnCount;
+/*
+    Saves attendance data back to CSV file
+*/
+void saveAttendance(string filename) {
+    fstream file;
+    file.open(filename, ios::out);
 
-    cout << "=============================================\n";
-    cout << "STUDENT ATTENDANCE TRACKER - MILESTONE 1\n";
-    cout << "=============================================\n\n";
-
-    createSheet(sheetName);
-    columnCount = createColumns(columns);
-
-    if (columnCount > 0) {
-        displayCSVHeader(columns, columnCount);
-    } else {
-        cout << "Failed to create sheet structure.\n";
+    file << "StudentID,Name,Status\n";
+    for (int i = 0; i < recordCount; i++) {
+        file << attendance[i].id << ","
+             << attendance[i].name << ","
+             << attendance[i].status << "\n";
     }
 
-    return 0;
+    file.close();
 }
